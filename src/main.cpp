@@ -6,17 +6,17 @@
 //////////////////////////
 // Constants
 uint32_t Z_RANGE = 10000; // The range between the tallest and lowest Z position
-uint32_t Z_LOW_BOUND = -14000; // the lowest position Z axis goes (0 is at the top)
-uint32_t Z_HIGH_BOUND = -2000; // the highest position Z goes
+uint32_t Z_LOW_BOUND = 4000; // the lowest position Z axis goes (0 is at the top)
+uint32_t Z_HIGH_BOUND = 9400; // the highest position Z goes
 
-uint16_t Z_HEIGHT = 17500;
+int32_t Z_HEIGHT = -17000;
 
 // Vars for speed stuff
 int maxStepsPerSec = 3000; // max speed for all motors
 int BPAcceleration = 200; // max acceleration for spinning build plat
 int ZAcceleration = 10000; // default acceleratuion for z axis
 
-int zDefaultSpeed = 2000;
+int zDefaultSpeed = 1500;
 
 int z_dir = -1;
 
@@ -25,19 +25,19 @@ int z_dir = -1;
 //////////////////////////
 
 // Relays
-uint8_t PUMP = 59;
-uint8_t VALVE = 60;
-uint8_t UV_LED = 61;
+uint8_t PUMP = 2;
+uint8_t VALVE = 3;
+uint8_t UV_LED = 4;
 
 // Z-Axis Motor
-uint8_t Z_ST_DIR = 3;
-uint8_t Z_ST_PUL = 4;
-uint8_t Z_ST_EN = 5;
+uint8_t Z_ST_DIR = 54;
+uint8_t Z_ST_PUL = 55;
+uint8_t Z_ST_EN = 56;
 
 // Build plate spin motor
-uint8_t BP_ST_DIR = 6;
-uint8_t BP_ST_PUL = 7;
-uint8_t BP_ST_EN = 8;
+uint8_t BP_ST_DIR = 57;
+uint8_t BP_ST_PUL = 58;
+uint8_t BP_ST_EN = 59;
 
 // Motor defintions and configs
 AccelStepper z_stepper(1, Z_ST_PUL, Z_ST_DIR);
@@ -71,7 +71,7 @@ void setup() {
   bp_stepper.setAcceleration(BPAcceleration);
 
   // Zero the Z
-  // zZero();
+  zZero();
 }
 
 void loop() {
@@ -80,8 +80,8 @@ void loop() {
   z_stepper.run();
 
   // spinBP(4000);
-  // zWipe(Z_LOW_BOUND, Z_HIGH_BOUND, zDefaultSpeed);
-
+  zWipe(Z_LOW_BOUND, Z_HIGH_BOUND, zDefaultSpeed);
+  spinBP(1000);
   
   
 }
@@ -106,6 +106,7 @@ void zMove(int pos, int speed) {
 void zZero() {
   z_stepper.move(Z_HEIGHT);
   z_stepper.runToPosition();
+  z_stepper.setCurrentPosition(0); // Set bottom position as 0
 }
 
 // wipes z axis with a high and low bound at some speed
@@ -114,10 +115,10 @@ void zWipe(int low_bound, int high_bound, int speed) {
   if (z_stepper.distanceToGo() == 0) {
     z_dir = z_dir * -1;
     if (z_dir == 1) {
-      zMove(low_bound + Z_HEIGHT, speed);
+      zMove(high_bound, speed);
     }
     else {
-      zMove(high_bound + Z_HEIGHT, speed);
+      zMove(low_bound, speed);
     }
   }
   else {
